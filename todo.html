@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>todo_List</title>
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@48,400,0,0"
+    />
+    <link rel="stylesheet" href="todo.css" />
+  </head>
+  <body>
+    <input type="text" placeholder="Enter new to-do" />
+    <p>
+      <input type="text" placeholder="Enter Category" list="categoryList" />
+    </p>
+    <datalist id="categoryList">
+      <option value="Personal"></option>
+      <option value="Work"></option>
+    </datalist>
+    <button id="add-btn">Add</button>
+    <ul>
+      <table id="todoTable">
+        <tr>
+          <td>checkbox</td>
+          <td>to-do</td>
+          <td>
+            <select id="categoryFilter">
+              <!-- <option value=""></option>
+              <option value="Personal">Personal</option>
+              <option value="Work">Work</option> -->
+            </select>
+          </td>
+          <td>delete</td>
+        </tr>
+      </table>
+    </ul>
+    <script src="todo.js"></script>
+  </body>
+</html>
