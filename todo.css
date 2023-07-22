@@ -28,6 +28,7 @@ body {
   justify-content: center;
   font-family: "Titillium Web", sans-serif;
 }
+
 .todo-input {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -49,9 +50,20 @@ body {
   outline: none;
   margin-bottom: 10px;
 }
-
+#searchbtn {
+  margin-bottom: 10px;
+}
 /* Style for the search input when focused */
 #searchInput:focus {
   border-color: #007bff;
   box-shadow: 0 0 5px #007bff;
+}
+.hidden {
+  display: none;
+}
+.visible {
+  display: block;
+}
+.backlogs-hidden {
+  text-align: center;
 }

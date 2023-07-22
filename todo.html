@@ -50,11 +50,17 @@
         <span></span>
         <button id="sortBtnPrio">Sort by priority</button>
         <span> </span>
+        <button id="viewBacklogsbtn">View Backlogs</button>
+        <span></span>
+        <button id="hideBackblogs">Hide Backlogs</button>
         <label
           ><input type="checkbox" id="shortlistBtn" />Incomplete First</label
         >
       </div>
       <div>
+        <div id="divtoShow" class="backlogs-hidden">
+          <h3>backLogs</h3>
+        </div>
         <table id="todoTable" class="todo-block">
           <tr>
             <td></td>
@@ -69,10 +75,6 @@
         </table>
         <h3 id="activityLogBtn">Activity Log</h3>
         <ul id="activityLog"></ul>
-
-        <h1>Backlogs</h1>
-        <button onclick="viewBacklogs()">View Backlogs</button>
-        <ul id="backlogs"></ul>
       </div>
     </div>
     <script src="todo.js"></script>

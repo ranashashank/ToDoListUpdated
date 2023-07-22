@@ -14,7 +14,10 @@ function todoMain() {
     prior,
     sortBtnPrio,
     searchInput,
-    searchbtn;
+    searchbtn,
+    viewBacklogsbtn,
+    hideBackblogs,
+    divtoShow;
 
   getElements();
   addListeners();
@@ -34,6 +37,9 @@ function todoMain() {
     sortBtnPrio = document.getElementById("sortBtnPrio");
     searchInput = document.getElementById("searchInput");
     searchbtn = document.getElementById("searchbtn");
+    viewBacklogsbtn = document.getElementById("viewBacklogsbtn");
+    hideBackblogs = document.getElementById("hideBackblogs");
+    divtoShow = document.getElementById("divtoShow");
   }
 
   function addListeners() {
@@ -43,7 +49,8 @@ function todoMain() {
     selectElem.addEventListener("change", multipleFilter, false);
     shortlistBtn.addEventListener("change", multipleFilter, false);
     searchbtn.addEventListener("click", searchTodos, false);
-
+    viewBacklogsbtn.addEventListener("click", viewBacklogs, false);
+    hideBackblogs.addEventListener("click", viewOriginaltable, false);
     //event delegation
     document
       .getElementById("todoTable")
@@ -125,7 +132,14 @@ function todoMain() {
       todoList = [];
     }
   }
+  function viewOriginaltable() {
+    clearTable();
+    divtoShow.classList.add("hidden");
+    divtoShow.classList.remove("visible");
+    renderRows(todoList);
+  }
   function renderRows(arr) {
+    console.log(arr);
     arr.forEach((todoObj) => {
       renderRow(todoObj);
     });
@@ -353,6 +367,7 @@ function todoMain() {
   function onTableClicked(event) {
     if (event.target.matches("td") && event.target.dataset.editable == "true") {
       let tempInputElem;
+      let eventType = event.target.dataset.type;
       switch (event.target.dataset.type) {
         case "date":
           tempInputElem = document.createElement("input");
@@ -384,7 +399,9 @@ function todoMain() {
             todoObj[event.target.parentNode.dataset.type] = changedValue;
           }
         });
-        logActivity(`Task "${editedValu}" edited to "${changedValue}" `);
+        logActivity(
+          `"${eventType}" "${editedValu}" edited to "${changedValue}" `
+        );
         updateActivityLog();
         save();
 
@@ -434,5 +451,33 @@ function todoMain() {
       li.innerText = log;
       activityLog.appendChild(li);
     });
+  }
+  document.addEventListener("DOMContentLoaded", function (event) {
+    divtoShow.classList.remove("visible");
+    divtoShow.classList.add("hidden");
+  });
+  function viewBacklogs() {
+    divtoShow.classList.remove("hidden");
+    divtoShow.classList.add("visible");
+    const backlogs = getBacklogs();
+    if (backlogs.length === 0) {
+      let backlogul = document.getElementById("backlogs");
+      const li = document.createElement("li");
+      li.innerText = "No backlogs";
+      backlogul.appendChild(li);
+    }
+
+    console.log(backlogs);
+
+    clearTable();
+    renderRows(backlogs);
+  }
+  function getBacklogs() {
+    const today = new Date().toISOString().slice(0, 10);
+    const backlogs = todoList.filter((todo) => {
+      const dueDate = new Date(todo.date).toISOString().slice(0, 10);
+      return !todo.done && dueDate <= today;
+    });
+    return backlogs;
   }
 }
