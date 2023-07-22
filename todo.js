@@ -3,6 +3,7 @@ todoMain();
 function todoMain() {
   const DEFAULT_OPTION = "choose category";
   let todoList = [];
+  let activityLogs = [];
   let inputEle,
     addButton,
     inputEle2,
@@ -42,6 +43,7 @@ function todoMain() {
     selectElem.addEventListener("change", multipleFilter, false);
     shortlistBtn.addEventListener("change", multipleFilter, false);
     searchbtn.addEventListener("click", searchTodos, false);
+
     //event delegation
     document
       .getElementById("todoTable")
@@ -60,6 +62,10 @@ function todoMain() {
     }
     console.log(inputEle2.value);
     let inputValue = inputEle.value;
+    //log added
+
+    logActivity(`Task "${inputValue}" added`);
+    updateActivityLog();
     inputEle.value = "";
 
     let inputValue2 = inputEle2.value;
@@ -209,6 +215,9 @@ function todoMain() {
     tdElem3.dataset.id = id;
 
     function deleteItem() {
+      console.log(tdElem2);
+      logActivity(`Task "${tdElem2.innerText}" deleted`);
+      updateActivityLog();
       trElem.remove();
       updateSelectOptions();
       for (let i = 0; i < todoList.length; i++) {
@@ -216,6 +225,7 @@ function todoMain() {
           todoList.splice(i, 1);
         }
       }
+
       save();
     }
 
@@ -226,6 +236,15 @@ function todoMain() {
           todoList[i]["done"] = this.checked;
         }
       }
+      if (this.checked) {
+        logActivity(`Task "${tdElem2.innerText}" checked`);
+        updateActivityLog();
+      } else {
+        logActivity(`Task "${tdElem2.innerText}" unchecked`);
+        updateActivityLog();
+      }
+      console.log(tdElem2.innerText);
+      console.log(this.checked);
       save();
     }
     function allowEdit(event) {
@@ -273,7 +292,6 @@ function todoMain() {
       let bDate = Date.parse(b.date);
       return aDate - bDate;
     });
-    save();
 
     clearTable();
     renderRows(todoList);
@@ -284,10 +302,10 @@ function todoMain() {
       const priorityOrder = { High: 1, medium: 2, low: 3 };
       const priorityA = priorityOrder[a.priority];
       const priorityB = priorityOrder[b.priority];
+
       return priorityA - priorityB;
     }
     console.log(todoList);
-    save();
 
     clearTable();
     renderRows(todoList);
@@ -353,6 +371,7 @@ function todoMain() {
 
         default:
       }
+      let editedValu = event.target.innerText;
       event.target.innerText = "";
       event.target.appendChild(tempInputElem);
 
@@ -365,15 +384,13 @@ function todoMain() {
             todoObj[event.target.parentNode.dataset.type] = changedValue;
           }
         });
+        logActivity(`Task "${editedValu}" edited to "${changedValue}" `);
+        updateActivityLog();
         save();
 
         event.target.parentNode.innerText = changedValue;
       }
     }
-  }
-
-  function priorityChange(event) {
-    selectedOption = event.target.value;
   }
 
   function searchTodos() {
@@ -393,9 +410,29 @@ function todoMain() {
     if (searchResults.length <= 0) {
       alert("No such task");
       return;
+    } else {
+      logActivity(`Task related to "${searchInput.value}" found`);
+      updateActivityLog();
     }
     save();
     clearTable();
     renderRows(searchResults);
+  }
+  //log Activity
+
+  function logActivity(activity) {
+    const currentDate = new Date();
+    const formattedDate = currentDate.toLocaleString();
+    activityLogs.unshift(`[${formattedDate}] ${activity}`);
+  }
+  function updateActivityLog() {
+    const activityLog = document.getElementById("activityLog");
+    activityLog.innerHTML = "";
+
+    activityLogs.forEach((log) => {
+      const li = document.createElement("li");
+      li.innerText = log;
+      activityLog.appendChild(li);
+    });
   }
 }
