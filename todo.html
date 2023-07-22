@@ -9,33 +9,66 @@
       href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@48,400,0,0"
     />
     <link rel="stylesheet" href="todo.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=PT+Sans:wght@400;700&family=Poppins:wght@300;700&family=Titillium+Web&family=Ubuntu:wght@300;400;500;700&display=swap"
+      rel="stylesheet"
+    />
   </head>
   <body>
-    <input type="text" placeholder="Enter new to-do" />
-    <p>
-      <input type="text" placeholder="Enter Category" list="categoryList" />
-    </p>
-    <datalist id="categoryList">
-      <option value="Personal"></option>
-      <option value="Work"></option>
-    </datalist>
-    <button id="add-btn">Add</button>
-    <ul>
-      <table id="todoTable">
-        <tr>
-          <td>checkbox</td>
-          <td>to-do</td>
-          <td>
-            <select id="categoryFilter">
-              <!-- <option value=""></option>
-              <option value="Personal">Personal</option>
-              <option value="Work">Work</option> -->
-            </select>
-          </td>
-          <td>delete</td>
-        </tr>
-      </table>
-    </ul>
+    <h3>Shashank's Todo List</h3>
+    <div style="display: flex">
+      <input type="text" id="searchInput" placeholder="Search tasks..." />
+      <button id="searchbtn">Search</button>
+    </div>
+
+    <div>
+      <div class="todo-input todo-block">
+        <span>To-do:</span>
+        <input type="text" placeholder="Enter new to-do" />
+        <span>Category:</span>
+        <input type="text" placeholder="Enter Category" list="categoryList" />
+
+        <datalist id="categoryList">
+          <option value="Personal"></option>
+          <option value="Work"></option>
+        </datalist>
+        <span>Due Date:</span>
+
+        <input type="date" id="dateInput" />
+        <span>Due Date:</span>
+        <select id="priorityId">
+          <option data-opvalue="1" value="High">High</option>
+          <option data-opvalue="2" value="low">Low</option>
+          <option data-opvalue="3" value="medium">Medium</option>
+        </select>
+        <span></span>
+        <button id="add-btn">Add</button>
+        <span></span>
+        <button id="sortBtn">Sort by date</button>
+        <span></span>
+        <button id="sortBtnPrio">Sort by priority</button>
+        <span> </span>
+        <label
+          ><input type="checkbox" id="shortlistBtn" />Incomplete First</label
+        >
+      </div>
+      <div>
+        <table id="todoTable" class="todo-block">
+          <tr>
+            <td></td>
+            <td>Due-Date</td>
+            <td>priority</td>
+            <td>to-do</td>
+            <td>
+              <select id="categoryFilter"></select>
+            </td>
+            <td>delete</td>
+          </tr>
+        </table>
+      </div>
+    </div>
     <script src="todo.js"></script>
   </body>
 </html>
