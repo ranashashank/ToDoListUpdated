@@ -18,6 +18,7 @@
   </head>
   <body>
     <h3>Shashank's Todo List</h3>
+    <div id="activityLog"></div>
     <div style="display: flex">
       <input type="text" id="searchInput" placeholder="Search tasks..." />
       <button id="searchbtn">Search</button>
@@ -40,8 +41,8 @@
         <span>Priority:</span>
         <select id="priorityId">
           <option data-opvalue="1" value="High">High</option>
-          <option data-opvalue="2" value="low">Low</option>
-          <option data-opvalue="3" value="medium">Medium</option>
+          <option data-opvalue="2" value="Low">Low</option>
+          <option data-opvalue="3" value="Medium">Medium</option>
         </select>
         <span></span>
         <button id="add-btn">Add</button>
@@ -49,19 +50,16 @@
         <button id="sortBtn">Sort by date</button>
         <span></span>
         <button id="sortBtnPrio">Sort by priority</button>
-        <span> </span>
-        <button id="viewBacklogsbtn">View Backlogs</button>
         <span></span>
-        <button id="hideBackblogs">Hide Backlogs</button>
-
+        <button id="showActivityLogBtn">Show Activity Log</button>
         <label
           ><input type="checkbox" id="shortlistBtn" />Incomplete First</label
         >
+        <button id="backlogsbtn">Show Backlogs</button>
+        <span></span>
+        <span>!!!To edit To-do click on the element</span>
       </div>
       <div>
-        <div id="divtoShow" class="backlogs-hidden">
-          <h3>backLogs</h3>
-        </div>
         <table id="todoTable" class="todo-block">
           <tr draggable="true">
             <td></td>
@@ -74,7 +72,7 @@
             <td>delete</td>
           </tr>
         </table>
-        <h3 id="activityLogBtn">Activity Log</h3>
+
         <ul id="activityLog"></ul>
       </div>
     </div>

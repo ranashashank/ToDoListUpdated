@@ -15,19 +15,22 @@ function todoMain() {
     sortBtnPrio,
     searchInput,
     searchbtn,
-    viewBacklogsbtn,
-    hideBackblogs,
     divtoShow,
     todoTable,
-    draggingElement;
+    draggingElement,
+    showActivityLogBtn,
+    activityLog,
+    backlogsbtn;
 
   getElements();
   addListeners();
   load();
+  loadActivityLogs();
   renderRows(todoList);
   updateSelectOptions();
 
   function getElements() {
+    activityLog = document.getElementById("activityLog");
     inputEle = document.getElementsByTagName("input")[1];
     inputEle2 = document.getElementsByTagName("input")[2];
     selectElem = document.getElementById("categoryFilter");
@@ -39,21 +42,33 @@ function todoMain() {
     sortBtnPrio = document.getElementById("sortBtnPrio");
     searchInput = document.getElementById("searchInput");
     searchbtn = document.getElementById("searchbtn");
-    viewBacklogsbtn = document.getElementById("viewBacklogsbtn");
-    hideBackblogs = document.getElementById("hideBackblogs");
-    divtoShow = document.getElementById("divtoShow");
+    showActivityLogBtn = document.getElementById("showActivityLogBtn");
     todoTable = document.getElementById("todoTable");
+    backlogsbtn = document.getElementById("backlogsbtn");
   }
 
   function addListeners() {
-    addButton.addEventListener("click", addTask, false);
+    addButton.addEventListener("click", () => {
+      addTask();
+      viewOriginaltable();
+    });
     sortButton.addEventListener("click", sortEntry, false);
     sortBtnPrio.addEventListener("click", sortEntryPrio, false);
     selectElem.addEventListener("change", multipleFilter, false);
     shortlistBtn.addEventListener("change", multipleFilter, false);
     searchbtn.addEventListener("click", searchTodos, false);
-    viewBacklogsbtn.addEventListener("click", viewBacklogs, false);
-    hideBackblogs.addEventListener("click", viewOriginaltable, false);
+    showActivityLogBtn.addEventListener(
+      "click",
+      function () {
+        // Call the updateActivityLog function immediately to display the logs
+        updateActivityLog();
+
+        // Delay clearing the logs by 5 seconds
+        setTimeout(clearActivityLog, 3000);
+      },
+      false
+    ); //
+    backlogsbtn.addEventListener("click", renderBacklogs, false);
     // event delegation
     document
       .getElementById("todoTable")
@@ -62,7 +77,9 @@ function todoMain() {
     todoTable.addEventListener("drop", onDrop, false);
     todoTable.addEventListener("dragover", onDragOver, false);
   }
-
+  function clearActivityLog() {
+    activityLog.innerHTML = ""; // Assuming "activityLog" is the container for the logs
+  }
   function addTask(event) {
     if (
       inputEle.value == "" ||
@@ -78,7 +95,7 @@ function todoMain() {
     //log added
 
     logActivity(`Task "${inputValue}" added`);
-    updateActivityLog();
+
     inputEle.value = "";
 
     let inputValue2 = inputEle2.value;
@@ -140,8 +157,6 @@ function todoMain() {
   }
   function viewOriginaltable() {
     clearTable();
-    divtoShow.classList.add("hidden");
-    divtoShow.classList.remove("visible");
     renderRows(todoList);
   }
   function renderRows(arr) {
@@ -158,6 +173,7 @@ function todoMain() {
     done,
   }) {
     //add a new Row
+    console.log(todoList);
     let table = document.getElementById("todoTable");
 
     let trElem = document.createElement("tr");
@@ -241,7 +257,7 @@ function todoMain() {
     function deleteItem() {
       console.log(tdElem2);
       logActivity(`Task "${tdElem2.innerText}" deleted`);
-      updateActivityLog();
+
       trElem.remove();
       updateSelectOptions();
       for (let i = 0; i < todoList.length; i++) {
@@ -262,10 +278,8 @@ function todoMain() {
       }
       if (this.checked) {
         logActivity(`Task "${tdElem2.innerText}" checked`);
-        updateActivityLog();
       } else {
         logActivity(`Task "${tdElem2.innerText}" unchecked`);
-        updateActivityLog();
       }
       console.log(tdElem2.innerText);
       console.log(this.checked);
@@ -440,7 +454,7 @@ function todoMain() {
         logActivity(
           `"${eventType}" "${editedValu}" edited to "${changedValue}" `
         );
-        updateActivityLog();
+
         save();
         event.target.parentNode.innerText = changedValue;
 
@@ -469,7 +483,6 @@ function todoMain() {
       return;
     } else {
       logActivity(`Task related to "${searchInput.value}"searched`);
-      updateActivityLog();
     }
     save();
     clearTable();
@@ -481,41 +494,54 @@ function todoMain() {
     const currentDate = new Date();
     const formattedDate = currentDate.toLocaleString();
     activityLogs.unshift(`[${formattedDate}] ${activity}`);
+
+    //save activity logs to local storage
+    saveActivityLogs();
   }
+
+  /// add event listener when button is clicked then only this runs
+
   function updateActivityLog() {
-    const activityLog = document.getElementById("activityLog");
+    // Clear the previous logs
     activityLog.innerHTML = "";
 
+    const headingElement = document.createElement("h3");
+    headingElement.innerText = "Activity Logs";
+
+    // Append the heading to the activityLog container
+    activityLog.appendChild(headingElement);
     activityLogs.forEach((log) => {
       const li = document.createElement("li");
       li.innerText = log;
       activityLog.appendChild(li);
     });
+
+    //save activity logs to local storage
+    saveActivityLogs();
   }
-  document.addEventListener("DOMContentLoaded", function (event) {
-    divtoShow.classList.remove("visible");
-    divtoShow.classList.add("hidden");
-  });
-  function viewBacklogs() {
-    divtoShow.classList.remove("hidden");
-    divtoShow.classList.add("visible");
-    const backlogs = getBacklogs();
-    if (backlogs.length === 0) {
-      let backlogul = document.getElementById("backlogs");
-      const li = document.createElement("li");
-      li.innerText = "No backlogs";
-      backlogul.appendChild(li);
+  function saveActivityLogs() {
+    let stringifiedLogs = JSON.stringify(activityLogs);
+    localStorage.setItem("activityLogs", stringifiedLogs);
+  }
+  function loadActivityLogs() {
+    let retrievedLogs = localStorage.getItem("activityLogs");
+    activityLogs = JSON.parse(retrievedLogs);
+    if (activityLogs === null) {
+      activityLogs = [];
     }
+  }
+  function renderBacklogs() {
+    const backlogs = getBacklogs();
     clearTable();
     renderRows(backlogs);
   }
   function getBacklogs() {
     const today = new Date().toISOString().slice(0, 10);
-    const backlogs = todoList.filter((todo) => {
+    const backlogArray = todoList.filter((todo) => {
       const dueDate = new Date(todo.date).toISOString().slice(0, 10);
       return !todo.done && dueDate < today;
     });
-    return backlogs;
+    return backlogArray;
   }
   function onDragstart(event) {
     draggingElement = event.target; //trElem
