@@ -51,7 +51,7 @@ function todoMain() {
     searchbtn.addEventListener("click", searchTodos, false);
     viewBacklogsbtn.addEventListener("click", viewBacklogs, false);
     hideBackblogs.addEventListener("click", viewOriginaltable, false);
-    //event delegation
+    // event delegation
     document
       .getElementById("todoTable")
       .addEventListener("click", onTableClicked, false);
@@ -188,7 +188,8 @@ function todoMain() {
     tdElem.className = "categoryCell";
     trElem.appendChild(tdElem3);
 
-    //edit cell
+    // //edit cell
+
     // let editSpan = document.createElement("span");
     // editSpan.innerText = "edit";
     // editSpan.className = "material-symbols-outlined";
@@ -214,19 +215,22 @@ function todoMain() {
     } else {
       trElem.classList.remove("strike");
     }
-    //For edit on cell feature
+    // For edit on cell feature
     dateElem.dataset.editable = true;
     tdElem2.dataset.editable = true;
     tdElem3.dataset.editable = true;
+    tdprior.dataset.editable = true;
 
     dateElem.dataset.type = "date";
     dateElem.dataset.value = date;
     tdElem2.dataset.type = "todo";
     tdElem3.dataset.type = "category";
+    tdprior.dataset.type = "priority";
 
     dateElem.dataset.id = id;
     tdElem2.dataset.id = id;
     tdElem3.dataset.id = id;
+    tdprior.dataset.id = id;
 
     function deleteItem() {
       console.log(tdElem2);
@@ -261,26 +265,6 @@ function todoMain() {
       console.log(this.checked);
       save();
     }
-    function allowEdit(event) {
-      let currentText = event.target.innerText;
-      event.target.innerText = "";
-      let tempTextbox = document.createElement("input");
-      event.target.appendChild(tempTextbox);
-      tempTextbox.value = currentText;
-
-      tempTextbox.addEventListener("change", onChange, false);
-      function onChange(event) {
-        let changedValue = event.target.value;
-        todoList.forEach((todoObj) => {
-          if (todoObj.id == event.target.parentNode.dataset.id) {
-            todoObj.todo = changedValue;
-          }
-        });
-        save();
-
-        event.target.parentNode.innerText = changedValue;
-      }
-    }
   }
 
   function _uuid() {
@@ -308,6 +292,7 @@ function todoMain() {
     });
 
     clearTable();
+    console.log(todoList);
     renderRows(todoList);
   }
   function sortEntryPrio() {
@@ -367,6 +352,7 @@ function todoMain() {
   function onTableClicked(event) {
     if (event.target.matches("td") && event.target.dataset.editable == "true") {
       let tempInputElem;
+
       let eventType = event.target.dataset.type;
       switch (event.target.dataset.type) {
         case "date":
@@ -383,8 +369,22 @@ function todoMain() {
           tempInputElem.value = event.target.innerText;
           event.target.appendChild(tempInputElem);
           break;
+        case "priority":
+          tempInputElem = document.createElement("select");
+          const priorityOptions = ["High", "Low", "Medium"];
+          for (const option of priorityOptions) {
+            const optionElem = document.createElement("option");
+            optionElem.value = option;
+            optionElem.innerText = option;
+            tempInputElem.appendChild(optionElem);
+          }
+          tempInputElem.value = event.target.dataset.value;
+          event.target.appendChild(tempInputElem);
+
+          break;
 
         default:
+          break;
       }
       let editedValu = event.target.innerText;
       event.target.innerText = "";
@@ -393,18 +393,49 @@ function todoMain() {
       tempInputElem.addEventListener("change", onChange, false);
       function onChange(event) {
         let changedValue = event.target.value;
-        todoList.forEach((todoObj) => {
-          if (todoObj.id == event.target.parentNode.dataset.id) {
-            todoObj.todo = changedValue;
-            todoObj[event.target.parentNode.dataset.type] = changedValue;
-          }
-        });
+        const eventType = event.target.parentNode.dataset.type;
+        const editedValue = event.target.parentNode.innerText;
+        switch (eventType) {
+          case "date":
+            todoList.forEach((todoObj) => {
+              if (todoObj.id === event.target.parentNode.dataset.id) {
+                todoObj.date = changedValue;
+              }
+            });
+            break;
+
+          case "todo":
+            todoList.forEach((todoObj) => {
+              if (todoObj.id === event.target.parentNode.dataset.id) {
+                todoObj.todo = changedValue;
+              }
+            });
+            break;
+
+          case "category":
+            todoList.forEach((todoObj) => {
+              if (todoObj.id === event.target.parentNode.dataset.id) {
+                todoObj.category = changedValue;
+              }
+            });
+            break;
+
+          case "priority":
+            todoList.forEach((todoObj) => {
+              if (todoObj.id === event.target.parentNode.dataset.id) {
+                todoObj.priority = changedValue;
+              }
+            });
+            break;
+
+          default:
+            break;
+        }
         logActivity(
           `"${eventType}" "${editedValu}" edited to "${changedValue}" `
         );
         updateActivityLog();
         save();
-
         event.target.parentNode.innerText = changedValue;
       }
     }
@@ -424,11 +455,11 @@ function todoMain() {
     );
 
     console.log(searchResults);
-    if (searchResults.length <= 0) {
+    if (searchResults.length == 0) {
       alert("No such task");
       return;
     } else {
-      logActivity(`Task related to "${searchInput.value}" found`);
+      logActivity(`Task related to "${searchInput.value}"searched`);
       updateActivityLog();
     }
     save();
@@ -466,9 +497,6 @@ function todoMain() {
       li.innerText = "No backlogs";
       backlogul.appendChild(li);
     }
-
-    console.log(backlogs);
-
     clearTable();
     renderRows(backlogs);
   }
