@@ -298,7 +298,7 @@ function todoMain() {
   function sortEntryPrio() {
     todoList.sort(customSort);
     function customSort(a, b) {
-      const priorityOrder = { High: 1, medium: 2, low: 3 };
+      const priorityOrder = { High: 1, Medium: 2, Low: 3 };
       const priorityA = priorityOrder[a.priority];
       const priorityB = priorityOrder[b.priority];
 
@@ -371,7 +371,7 @@ function todoMain() {
           break;
         case "priority":
           tempInputElem = document.createElement("select");
-          const priorityOptions = ["High", "Low", "Medium"];
+          const priorityOptions = ["High", "Medium", "Low"];
           for (const option of priorityOptions) {
             const optionElem = document.createElement("option");
             optionElem.value = option;
