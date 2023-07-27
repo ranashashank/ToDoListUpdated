@@ -437,6 +437,9 @@ function todoMain() {
         updateActivityLog();
         save();
         event.target.parentNode.innerText = changedValue;
+
+        clearTable();
+        renderRows(todoList);
       }
     }
   }
