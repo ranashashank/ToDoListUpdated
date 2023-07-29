@@ -84,7 +84,7 @@ function todoMain() {
     console.log(inputEle2.value);
     let inputValue = inputEle.value;
     //log added
-
+    let task = extractTodoFromTodoInput(inputValue);
     logActivity(`Task "${inputValue}" added`);
 
     inputEle.value = "";
@@ -96,6 +96,16 @@ function todoMain() {
 
     let reminderValue = document.getElementById("reminderInput").value;
     console.log(prior);
+
+    // Check for duplicate todo before adding
+    const isDuplicate = todoList.some(
+      (todoObj) => todoObj.todo.toLowerCase() === task.toLowerCase()
+    );
+
+    if (isDuplicate) {
+      alert("Todo with the same name and category already exists.");
+      return;
+    }
     // Extract the due date from the input value
     let dateValue = extractDateFromTodoInput(inputValue);
     console.log(dateValue);
@@ -106,7 +116,7 @@ function todoMain() {
     }
     let obj = {
       id: _uuid(),
-      todo: extractTodoFromTodoInput(inputValue),
+      todo: task,
       category: inputValue2,
       date: dateValue,
       priority: selectedOption,
