@@ -81,15 +81,6 @@ function todoMain() {
     activityLog.innerHTML = ""; // Assuming "activityLog" is the container for the logs
   }
   function addTask(event) {
-    if (
-      inputEle.value == "" ||
-      inputEle2.value == "" ||
-      prior.value == "" ||
-      dateInput.value == ""
-    ) {
-      alert("please enter every field");
-      return;
-    }
     console.log(inputEle2.value);
     let inputValue = inputEle.value;
     //log added
@@ -102,23 +93,106 @@ function todoMain() {
     inputEle2.value = "";
 
     let selectedOption = prior.value;
-    let dateValue = dateInput.value;
-    dateInput.value = "";
+
     console.log(prior);
+    // Extract the due date from the input value
+    let dateValue = extractDateFromTodoInput(inputValue);
+    console.log(dateValue);
+    // If no valid date found in the input, use the date input field value
+    if (!dateValue) {
+      dateValue = dateInput.value;
+      dateInput.value = "";
+    }
     let obj = {
       id: _uuid(),
-      todo: inputValue,
+      todo: extractTodoFromTodoInput(inputValue),
       category: inputValue2,
       date: dateValue,
       priority: selectedOption,
       done: false,
     };
+    if (inputValue == "") {
+      alert("please enter  Todo");
+      return;
+    }
+    if (inputValue2 == "") {
+      alert("please enter category");
+      return;
+    }
+    if (dateValue == "") {
+      alert("please enter  date");
+      return;
+    }
+    if (selectedOption == "") {
+      alert("please enter priority");
+      return;
+    }
+    // if (
+    //   inputValue == "" ||
+    //   inputValue2 == "" ||
+    //   selectedOption == "" ||
+    //   dateValue == ""
+    // ) {
+    //   alert("please enter every field");
+    //   return;
+    // }
     renderRow(obj);
 
     todoList.push(obj);
 
     save();
     updateSelectOptions();
+  }
+  function extractTodoFromTodoInput(inputValue) {
+    // Extract the todo text from the input value by removing the date information
+    return inputValue
+      .replace(
+        /by\s+(tomorrow|today|\d{1,2}(?:st|nd|rd|th)?\s+\w{3,}\s+\d{4}(?:\s+\d{1,2}:\d{2}(?:\s+[ap]m)?)?|(?:\d{1,2}\s+)?(?:Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|Jul(?:y)?|Aug(?:ust)?|Sep(?:tember)?|Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?)\s+\d{4})/i,
+        ""
+      )
+      .trim();
+  }
+
+  function extractDateFromTodoInput(inputValue) {
+    // Extract the due date information from the input value
+    const dateRegex =
+      /by\s+(tomorrow|today|\d{1,2}(?:st|nd|rd|th)?\s+\w{3,}\s+\d{4}(?:\s+\d{1,2}:\d{2}(?:\s+[ap]m)?)?|(?:\d{1,2}\s+)?(?:Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|Jul(?:y)?|Aug(?:ust)?|Sep(?:tember)?|Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?)\s+\d{4})/i;
+    const match = inputValue.match(dateRegex);
+
+    if (match) {
+      const dateInput = match[1].toLowerCase();
+      if (dateInput === "tomorrow") {
+        const currentDate = new Date();
+        currentDate.setDate(currentDate.getDate() + 1);
+        return currentDate.toISOString().slice(0, 10);
+      } else if (dateInput === "today") {
+        const currentDate = new Date();
+        return currentDate.toISOString().slice(0, 10);
+      } else {
+        const dateAndTimeRegex =
+          /(?:\d{1,2}\s+)?(?:Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|Jul(?:y)?|Aug(?:ust)?|Sep(?:tember)?|Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?)\s+\d{4}\s+(?:\d{1,2}:\d{2}(?:\s+[ap]m)?)?/;
+        const dateMatch = dateInput.match(dateAndTimeRegex);
+
+        if (dateMatch) {
+          const dateValue = dateMatch[0];
+          const dueDate = new Date(dateValue);
+          return dueDate.toISOString().slice(0, 10);
+        } else {
+          const dateWithoutBy = dateInput.replace(/by\s+/, "");
+          const dateOnlyRegex =
+            /(?:\d{1,2}\s+)?(?:Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|Jul(?:y)?|Aug(?:ust)?|Sep(?:tember)?|Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?)\s+\d{4}/i;
+          const dateOnlyMatch = dateWithoutBy.match(dateOnlyRegex);
+
+          if (dateOnlyMatch) {
+            const dateValue = dateOnlyMatch[0];
+            const dueDate = new Date(dateValue);
+            return dueDate.toISOString().slice(0, 10);
+          }
+        }
+      }
+    }
+    // If no date information found, return an empty string
+    return "";
   }
 
   function updateSelectOptions() {
