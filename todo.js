@@ -114,6 +114,7 @@ function todoMain() {
       dateValue = dateInput.value;
       dateInput.value = "";
     }
+
     let obj = {
       id: _uuid(),
       todo: task,
