@@ -94,6 +94,7 @@ function todoMain() {
 
     let selectedOption = prior.value;
 
+    let reminderValue = document.getElementById("reminderInput").value;
     console.log(prior);
     // Extract the due date from the input value
     let dateValue = extractDateFromTodoInput(inputValue);
@@ -110,6 +111,7 @@ function todoMain() {
       date: dateValue,
       priority: selectedOption,
       done: false,
+      reminder: reminderValue,
     };
     if (inputValue == "") {
       alert("please enter  Todo");
@@ -137,7 +139,7 @@ function todoMain() {
     //   return;
     // }
     renderRow(obj);
-
+    checkReminders();
     todoList.push(obj);
 
     save();
@@ -147,7 +149,7 @@ function todoMain() {
     // Extract the todo text from the input value by removing the date information
     return inputValue
       .replace(
-        /by\s+(tomorrow|today|\d{1,2}(?:st|nd|rd|th)?\s+\w{3,}\s+\d{4}(?:\s+\d{1,2}:\d{2}(?:\s+[ap]m)?)?|(?:\d{1,2}\s+)?(?:Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|Jul(?:y)?|Aug(?:ust)?|Sep(?:tember)?|Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?)\s+\d{4})/i,
+        /by\s+(tomorrow|today|\d{1,2}(?:st|nd|rd|th)?\s+(?:Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|Jul(?:y)?|Aug(?:ust)?|Sep(?:tember)?|Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?)\s+\d{4}(?:\s+\d{1,2}:\d{2}(?:\s+[ap]m)?)?)/i,
         ""
       )
       .trim();
@@ -156,7 +158,7 @@ function todoMain() {
   function extractDateFromTodoInput(inputValue) {
     // Extract the due date information from the input value
     const dateRegex =
-      /by\s+(tomorrow|today|\d{1,2}(?:st|nd|rd|th)?\s+\w{3,}\s+\d{4}(?:\s+\d{1,2}:\d{2}(?:\s+[ap]m)?)?|(?:\d{1,2}\s+)?(?:Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|Jul(?:y)?|Aug(?:ust)?|Sep(?:tember)?|Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?)\s+\d{4})/i;
+      /by\s+(tomorrow|today|\d{1,2}(?:st|nd|rd|th)?\s+(?:Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|Jul(?:y)?|Aug(?:ust)?|Sep(?:tember)?|Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?)\s+\d{4}(?:\s+\d{1,2}:\d{2}(?:\s+[ap]m)?)?)/i;
     const match = inputValue.match(dateRegex);
 
     if (match) {
@@ -170,29 +172,71 @@ function todoMain() {
         return currentDate.toISOString().slice(0, 10);
       } else {
         const dateAndTimeRegex =
-          /(?:\d{1,2}\s+)?(?:Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|Jul(?:y)?|Aug(?:ust)?|Sep(?:tember)?|Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?)\s+\d{4}\s+(?:\d{1,2}:\d{2}(?:\s+[ap]m)?)?/;
+          /(\d{1,2})(?:st|nd|rd|th)?\s+(Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|Jul(?:y)?|Aug(?:ust)?|Sep(?:tember)?|Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?)\s+(\d{4})\s+(\d{1,2}:\d{2}(?:\s+[ap]m)?)/;
         const dateMatch = dateInput.match(dateAndTimeRegex);
 
         if (dateMatch) {
-          const dateValue = dateMatch[0];
-          const dueDate = new Date(dateValue);
+          const [, day, month, time] = dateMatch;
+          const year = extractYear(inputValue);
+          const dateValue = `${year}-${monthToNumber(month)}-${day.padStart(
+            2,
+            "0"
+          )}`;
+          const dueDate = new Date(dateValue + " " + time);
           return dueDate.toISOString().slice(0, 10);
         } else {
           const dateWithoutBy = dateInput.replace(/by\s+/, "");
           const dateOnlyRegex =
-            /(?:\d{1,2}\s+)?(?:Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|Jul(?:y)?|Aug(?:ust)?|Sep(?:tember)?|Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?)\s+\d{4}/i;
+            /(\d{1,2})(?:st|nd|rd|th)?\s+(Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|Jul(?:y)?|Aug(?:ust)?|Sep(?:tember)?|Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?)/i;
           const dateOnlyMatch = dateWithoutBy.match(dateOnlyRegex);
 
           if (dateOnlyMatch) {
-            const dateValue = dateOnlyMatch[0];
+            const [, day, month] = dateOnlyMatch;
+            const year = extractYear(inputValue);
+            const dateValue = `${year}-${monthToNumber(month)}-${day.padStart(
+              2,
+              "0"
+            )}`;
             const dueDate = new Date(dateValue);
-            return dueDate.toISOString().slice(0, 10);
+            console.log(dueDate);
+            if (dueDate != "Invalid Date")
+              return dueDate.toISOString().slice(0, 10);
           }
         }
       }
     }
     // If no date information found, return an empty string
     return "";
+  }
+
+  function extractYear(inputValue) {
+    // Extract the year from the input value
+    const yearRegex = /\d{4}/;
+    const yearMatch = inputValue.match(yearRegex);
+    if (yearMatch) {
+      return yearMatch[0];
+    }
+    // If no year found, return the current year
+    const currentDate = new Date();
+    return currentDate.getFullYear().toString();
+  }
+
+  function monthToNumber(month) {
+    const months = {
+      january: "01",
+      february: "02",
+      march: "03",
+      april: "04",
+      may: "05",
+      june: "06",
+      july: "07",
+      august: "08",
+      september: "09",
+      october: "10",
+      november: "11",
+      december: "12",
+    };
+    return months[month.toLowerCase()];
   }
 
   function updateSelectOptions() {
@@ -228,6 +272,7 @@ function todoMain() {
     if (todoList === null) {
       todoList = [];
     }
+    checkReminders();
   }
   function viewOriginaltable() {
     clearTable();
@@ -244,6 +289,7 @@ function todoMain() {
     category: inputValue2,
     date,
     priority: selectedOption,
+    reminder,
     done,
   }) {
     //add a new Row
@@ -304,6 +350,11 @@ function todoMain() {
     let tdElem4 = document.createElement("td");
     tdElem4.appendChild(spanElem);
     trElem.appendChild(tdElem4);
+
+    // Reminder cell
+    let tdElem5 = document.createElement("td");
+    tdElem5.innerText = reminder;
+    trElem.appendChild(tdElem5);
 
     checkboxElem.checked = done;
     if (done) {
@@ -544,6 +595,7 @@ function todoMain() {
     console.log(searchTerm);
     if (searchTerm === "") {
       alert("Please enter something to search");
+      viewOriginaltable();
       return;
     }
     let searchResults = [];
@@ -650,5 +702,17 @@ function todoMain() {
   }
   function onDragOver(event) {
     event.preventDefault();
+  }
+  function checkReminders() {
+    const currentTime = new Date().getTime();
+    const reminderTasks = todoList.filter((task) => {
+      const reminderTime = new Date(task.reminder).getTime();
+      return !task.done && reminderTime <= currentTime;
+    });
+
+    reminderTasks.forEach((task) => {
+      alert(`Reminder: "${task.todo}" to be done before "${task.reminder}"`);
+      // Add any other logic you want to handle the reminder, such as playing a sound or showing a notification.
+    });
   }
 }
