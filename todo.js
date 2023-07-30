@@ -4,6 +4,7 @@ function todoMain() {
   const DEFAULT_OPTION = "choose category";
   let todoList = [];
   let activityLogs = [];
+  let subtask = [];
   let inputEle,
     addButton,
     inputEle2,
@@ -20,7 +21,8 @@ function todoMain() {
     draggingElement,
     showActivityLogBtn,
     activityLog,
-    backlogsbtn;
+    backlogsbtn,
+    subtasksInput;
 
   getElements();
   addListeners();
@@ -45,6 +47,7 @@ function todoMain() {
     showActivityLogBtn = document.getElementById("showActivityLogBtn");
     todoTable = document.getElementById("todoTable");
     backlogsbtn = document.getElementById("backlogsbtn");
+    subtasksInput = document.getElementById("subtasks");
   }
 
   function addListeners() {
@@ -76,6 +79,7 @@ function todoMain() {
     todoTable.addEventListener("dragstart", onDragstart, false);
     todoTable.addEventListener("drop", onDrop, false);
     todoTable.addEventListener("dragover", onDragOver, false);
+    const addSubtaskBtn = document.getElementById("addSubtaskBtn");
   }
   function clearActivityLog() {
     activityLog.innerHTML = ""; // Assuming "activityLog" is the container for the logs
@@ -87,6 +91,9 @@ function todoMain() {
     let task = extractTodoFromTodoInput(inputValue);
     logActivity(`Task "${inputValue}" added`);
 
+    let subtasks = subtasksInput.value.split(",");
+    console.log(subtasks);
+    subtasksInput.value = "";
     inputEle.value = "";
 
     let inputValue2 = inputEle2.value;
@@ -95,26 +102,28 @@ function todoMain() {
     let selectedOption = prior.value;
 
     let reminderValue = document.getElementById("reminderInput").value;
+    document.getElementById("reminderInput").value;
     console.log(prior);
 
     // Check for duplicate todo before adding
-    const isDuplicate = todoList.some(
-      (todoObj) => todoObj.todo.toLowerCase() === task.toLowerCase()
-    );
-
-    if (isDuplicate) {
-      alert("Todo with the same name and category already exists.");
-      return;
+    if (todoList.length > 0) {
+      const isDuplicate = todoList.some(
+        (todoObj) => todoObj.todo.toLowerCase() === task.toLowerCase()
+      );
+      if (isDuplicate) {
+        alert("Todo with the same name and category already exists.");
+        return;
+      }
     }
+
     // Extract the due date from the input value
     let dateValue = extractDateFromTodoInput(inputValue);
     console.log(dateValue);
     // If no valid date found in the input, use the date input field value
     if (!dateValue) {
       dateValue = dateInput.value;
-      dateInput.value = "";
     }
-
+    dateInput.value = "";
     let obj = {
       id: _uuid(),
       todo: task,
@@ -123,6 +132,7 @@ function todoMain() {
       priority: selectedOption,
       done: false,
       reminder: reminderValue,
+      subtask: subtasks,
     };
     if (inputValue == "") {
       alert("please enter  Todo");
@@ -149,6 +159,7 @@ function todoMain() {
     //   alert("please enter every field");
     //   return;
     // }
+    console.log(obj);
     renderRow(obj);
     checkReminders();
     todoList.push(obj);
@@ -300,8 +311,9 @@ function todoMain() {
     category: inputValue2,
     date,
     priority: selectedOption,
-    reminder,
     done,
+    reminder,
+    subtask: subtasks,
   }) {
     //add a new Row
     console.log(todoList);
@@ -373,22 +385,142 @@ function todoMain() {
     } else {
       trElem.classList.remove("strike");
     }
+    // // Subtasks cell
+    let subtasksTd = document.createElement("td");
+    let subtasksList = document.createElement("ul");
+
+    console.log(subtasks);
+    subtasks.forEach((subtask, ind) => {
+      let subtaskItem = document.createElement("li");
+
+      // Create a container to hold the subtask text and buttons
+      let subtaskContainer = document.createElement("div");
+
+      // Subtask text
+      let subtaskText = document.createElement("span");
+      subtaskText.innerText = subtask;
+      subtaskContainer.appendChild(subtaskText);
+
+      // Add checkbox
+      let checkboxsub = document.createElement("input");
+      checkboxsub.type = "checkbox";
+      checkboxsub.addEventListener(
+        "click",
+        checkboxClicksubtaskCallback,
+        false
+      );
+      subtaskContainer.appendChild(checkboxsub);
+
+      // Add an edit button for each subtask
+      let editSubtaskButton = document.createElement("button");
+      editSubtaskButton.innerText = "Edit";
+      editSubtaskButton.addEventListener("click", () => {
+        editSubtask(subtaskItem, ind, id);
+      });
+      subtaskContainer.appendChild(editSubtaskButton);
+
+      function checkboxClicksubtaskCallback() {
+        subtaskItem.classList.toggle("strike");
+        save();
+      }
+
+      subtaskItem.appendChild(subtaskContainer);
+      subtasksList.appendChild(subtaskItem);
+    });
+    subtasksTd.appendChild(subtasksList);
+    trElem.appendChild(subtasksTd);
+
+    // update the subtask
+    let subtasksTdButton = document.createElement("td");
+    let subtaskButton = document.createElement("button");
+    subtaskButton.innerText = "Update Subtask";
+    subtaskButton.addEventListener("click", updateSubtask);
+    subtasksTdButton.appendChild(subtaskButton);
+    trElem.appendChild(subtasksTdButton);
+
+    function updateSubtask() {
+      // Prompt the user for input
+      const userInput = window.prompt(
+        "Enter subtasks separated by commas:",
+        subtasks.join(", ")
+      );
+
+      if (userInput !== null) {
+        // Split the input into an array of subtasks
+        const newSubtasks = userInput
+          .split(",")
+          .map((subtask) => subtask.trim());
+
+        // Remove any empty subtasks
+        const filteredSubtasks = newSubtasks.filter(
+          (subtask) => subtask !== ""
+        );
+
+        // Update the subtask array
+        subtasks = filteredSubtasks;
+
+        // Clear existing subtasks in the list
+        subtasksList.innerHTML = "";
+
+        // Create new subtask elements based on the updated subtasks array
+        filteredSubtasks.forEach((subtask, ind) => {
+          let subtaskItem = document.createElement("li");
+
+          // Create a container to hold the subtask text and buttons
+          let subtaskContainer = document.createElement("div");
+
+          // Subtask text
+          let subtaskText = document.createElement("span");
+          subtaskText.innerText = subtask;
+          subtaskContainer.appendChild(subtaskText);
+
+          // Add checkbox
+          let checkboxsub = document.createElement("input");
+          checkboxsub.type = "checkbox";
+          checkboxsub.addEventListener(
+            "click",
+            checkboxClicksubtaskCallback,
+            false
+          );
+          subtaskContainer.appendChild(checkboxsub);
+
+          // Add an edit button for each subtask
+          let editSubtaskButton = document.createElement("button");
+          editSubtaskButton.innerText = "Edit";
+          editSubtaskButton.addEventListener("click", () => {
+            editSubtask(subtaskItem, ind, id);
+          });
+          subtaskContainer.appendChild(editSubtaskButton);
+
+          function checkboxClicksubtaskCallback() {
+            subtaskItem.classList.toggle("strike");
+            save();
+          }
+
+          subtaskItem.appendChild(subtaskContainer);
+          subtasksList.appendChild(subtaskItem);
+        });
+      }
+    }
     // For edit on cell feature
     dateElem.dataset.editable = true;
     tdElem2.dataset.editable = true;
     tdElem3.dataset.editable = true;
     tdprior.dataset.editable = true;
+    tdElem5.dataset.editable = true;
 
     dateElem.dataset.type = "date";
     dateElem.dataset.value = date;
     tdElem2.dataset.type = "todo";
     tdElem3.dataset.type = "category";
     tdprior.dataset.type = "priority";
+    tdElem5.dataset.type = "remindertype";
 
     dateElem.dataset.id = id;
     tdElem2.dataset.id = id;
     tdElem3.dataset.id = id;
     tdprior.dataset.id = id;
+    tdElem5.dataset.id = id;
 
     function deleteItem() {
       console.log(tdElem2);
@@ -419,6 +551,21 @@ function todoMain() {
       }
       console.log(tdElem2.innerText);
       console.log(this.checked);
+      save();
+    }
+  }
+  function editSubtask(subtaskItem, subtaskIndex, mainTaskId) {
+    const spanElement = subtaskItem.children[0].querySelector("span");
+    const editedSubtask = prompt("Edit Subtask:", spanElement.innerText);
+    if (editedSubtask !== null && editedSubtask.trim() !== "") {
+      const mainTaskObj = todoList.find((todoObj) => todoObj.id === mainTaskId);
+
+      // Update the subtask in the main task object's subtasks array
+      mainTaskObj.subtask[subtaskIndex] = editedSubtask;
+      clearTable();
+      renderRows(todoList);
+
+      // Save the changes to local storage and update the table
       save();
     }
   }
@@ -505,6 +652,7 @@ function todoMain() {
       }
     }
   }
+
   function onTableClicked(event) {
     if (event.target.matches("td") && event.target.dataset.editable == "true") {
       let tempInputElem;
@@ -538,7 +686,13 @@ function todoMain() {
           event.target.appendChild(tempInputElem);
 
           break;
+        case "remindertype":
+          tempInputElem = document.createElement("input");
+          tempInputElem.type = "datetime-local";
+          tempInputElem.value = event.target.dataset.value;
 
+          event.target.appendChild(tempInputElem);
+          break;
         default:
           break;
       }
@@ -583,7 +737,14 @@ function todoMain() {
               }
             });
             break;
-
+          case "remindertype":
+            todoList.forEach((todoObj) => {
+              console.log(changedValue);
+              if (todoObj.id === event.target.parentNode.dataset.id) {
+                todoObj.reminder = changedValue;
+              }
+            });
+            break;
           default:
             break;
         }
