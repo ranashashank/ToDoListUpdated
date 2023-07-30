@@ -515,6 +515,7 @@ function todoMain() {
     tdElem3.dataset.type = "category";
     tdprior.dataset.type = "priority";
     tdElem5.dataset.type = "remindertype";
+    tdElem5.dataset.value = reminder;
 
     dateElem.dataset.id = id;
     tdElem2.dataset.id = id;
